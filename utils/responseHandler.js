@@ -1,4 +1,4 @@
-// Utility function to send all response in json
+// Utility function to send all response in json 
 const sendResponse = (res, statuscode, responsemessage, data = null) => {
   const response = {
     statuscode,
