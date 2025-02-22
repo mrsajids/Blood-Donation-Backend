@@ -2,11 +2,11 @@ const { Pool } = require("pg");
 
 const createPool = () => {
   const pool = new Pool({
-    user: "postgres",
-    password: "TuUrYtTNiHKkrgTcXLuAMRgxSnmIXndv",
-    host: "hopper.proxy.rlwy.net",
-    port: 44146,
-    database: "railway",
+    user: process.env.USER,
+    password: process.env.PASSWORD,
+    host: process.env.HOST,
+    port: process.env.DBPORT,
+    database: process.env.DATABASE,
   });
 
   // Test the connection when the server starts
