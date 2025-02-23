@@ -35,7 +35,7 @@ const loginUser = async (req, res, next) => {
 
 const registerUser = async (req, res, next) => {
   const { firtname, lastname, email, gender, password } = req.body;
-
+ 
   // Input validation
   if (!firtname || !lastname || !email || !gender || !password) {
     return sendResponse(res, 400, "All fields are required");
