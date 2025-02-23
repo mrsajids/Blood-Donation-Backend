@@ -8,44 +8,29 @@ const loginUser = async (req, res, next) => {
   // Input validation
   const { email, password } = req.body;
   if (!email || !password) {
-    return sendResponse(res, 400, "All fields are required");
+    return sendResponse(res, 400, "email & password fields are required");
   }
 
-  // check if user exists
-  // let user = null;
-  // const resp = await query("select * from public.user where emailid = $1", [
-  //   email
-  // ]);
-
-  // if (resp.rows.length === 0) return sendResponse(res, 404, "User not found");
-  // else if (resp.rows.length > 0) {
-  //   user = resp.rows[0];
-  // }
-
-  // // check if password is correct
-  // const isPasswordCorrect = await bcrypt.compare(password, user.password);
-  // if (isPasswordCorrect) {
-  //   const headerkey = jwt.sign(
-  //     { email: user.emailid, firstname: user.firstname },
-  //     "secret"
-  //   );
-  //   return sendResponse(res, 200, "successfully logined", { headerkey });
-  // } else {
-  //   return sendResponse(res, 401, "Password is incorrect");
-  // }
-  const salt = "fixedSalt123"; // Always use the same salt
+  // const salt = "fixedSalt123"; // Always use the same salt
   const hashedPassword = crypto
-    .pbkdf2Sync(password, salt, 100000, 64, "sha256")
+    .pbkdf2Sync(password, process.env.SHASALT, 100000, 64, "sha256")
     .toString("hex");
 
   // const hashedPassword = await bcrypt.hash(password, 10);
-  console.log(hashedPassword);
+  // console.log(hashedPassword);
 
   const procedure = "Call public.userlogincheck($1, $2, $3, $4)";
   const values = ["logincheck", email, hashedPassword, ""];
   const dbResponse = await query(procedure, values);
-  const response = parseDbResponse(dbResponse.rows);
-  sendResponse(res, response.statuscode, response.message);
+  let response = parseDbResponse(dbResponse.rows);
+  let token = null;
+  if (response?.statuscode == 200) {
+    token = jwt.sign({ email }, process.env.TOKENSECRET, { expiresIn: '24h' })
+  }
+  response.token = token;
+  console.log(jwt.verify(token, process.env.TOKENSECRET));
+  res.status(response.statuscode).json(response);
+  // sendResponse(res, response.statuscode, response.message);
 };
 
 const registerUser = async (req, res, next) => {
@@ -56,9 +41,9 @@ const registerUser = async (req, res, next) => {
     return sendResponse(res, 400, "All fields are required");
   }
   //  converting password to hash
-  const salt = "fixedSalt123"; // Always use the same salt
+  // const salt = "fixedSalt123"; // Always use the same salt
   const hashedPassword = crypto
-    .pbkdf2Sync(password, salt, 100000, 64, "sha256")
+    .pbkdf2Sync(password, process.env.SHASALT, 100000, 64, "sha256")
     .toString("hex");
 
   console.log(
